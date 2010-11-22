@@ -87,6 +87,7 @@ def filter_mails(src_dir, dst_dir):
 	if not os.path.exists(dst_dir):
 		os.mkdir(dst_dir)
 
+	src_dir = unicode(src_dir)
 	for fn in os.listdir(src_dir):
 		src_fn = os.path.join(src_dir, fn)
 		dst_fn = os.path.join(dst_dir, fn)
