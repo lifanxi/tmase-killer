@@ -17,13 +17,14 @@ def usage():
 	sys.exit(1)
 
 def html_2_text(html):
-	# TODO: transforming of 1262359306.28735_467.lorien is unsuccessful
-
 	soup = BeautifulSoup.BeautifulSoup(html)
 
 	# remove all CData, processing-instructions, comments and declarations
 	unwanted_elements = (
-			BeautifulSoup.NavigableString,
+			BeautifulSoup.CData,
+			BeautifulSoup.Comment,
+			BeautifulSoup.Declaration,
+			BeautifulSoup.ProcessingInstruction,
 			)
 	elements = soup.findAll(text=lambda text: isinstance(text, unwanted_elements))
 	for element in elements:
@@ -66,13 +67,16 @@ def transform_mail(src_fn, dst_f):
 	charset = entity.get_content_charset('ascii')
 
 	try:
-		payload = payload.decode(charset).encode('ascii')
 		if is_html:
 			payload = html_2_text(payload)
-		if isinstance(payload, unicode):
-			payload = payload.encode('ascii')
+		if not isinstance(payload, unicode):
+			payload = payload.decode(charset)
+		payload = payload.encode('ascii')
 	except (UnicodeEncodeError, UnicodeDecodeError, LookupError), e:
 		raise UnwantedMail, str(e)
+
+	if not payload:
+		raise UnwantedMail, 'empty mail'
 
 	# write to dst_f
 	dst_f.write('\n')
